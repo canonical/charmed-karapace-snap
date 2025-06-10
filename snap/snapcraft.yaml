@@ -29,12 +29,24 @@ apps:
     plugs:
       - network
       - network-bind
+  statsd-exporter:
+    command: bin/statsd_exporter
+    daemon: simple
+    install-mode: disable
+    plugs:
+      - network
+      - network-bind
   version:
     command: bin/karapace --version
   mkpasswd:
     command: bin/karapace_mkpasswd
 
 parts:
+  statsd-exporter:
+    plugin: go
+    source: https://github.com/prometheus/statsd_exporter.git
+    build-snaps:
+        - go
   karapace:
     plugin: python
     source: https://github.com/Aiven-Open/karapace.git  # pip install git+https://github.com/Aiven-Open/karapace@main
