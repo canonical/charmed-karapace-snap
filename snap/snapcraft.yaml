@@ -13,13 +13,13 @@ confinement: strict
 system-usernames:
   snap_daemon: shared
 
-# COS INTEGRATION
-# slots:
-#   logs:
-#     interface: content
-#     source:
-#       read:
-#         - $SNAP_COMMON/var/log/karapace
+slots:
+  logs:
+    interface: content
+    content: logs
+    source:
+      read:
+        - $SNAP_COMMON/var/log/kafka
 
 apps:
   daemon:
