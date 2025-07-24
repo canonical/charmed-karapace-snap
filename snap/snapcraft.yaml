@@ -13,17 +13,24 @@ confinement: strict
 system-usernames:
   snap_daemon: shared
 
-# COS INTEGRATION
-# slots:
-#   logs:
-#     interface: content
-#     source:
-#       read:
-#         - $SNAP_COMMON/var/log/karapace
+slots:
+  logs:
+    interface: content
+    content: logs
+    source:
+      read:
+        - $SNAP_COMMON/var/log/karapace
 
 apps:
   daemon:
     command: opt/karapace/bin/start-wrapper.bash
+    daemon: simple
+    install-mode: disable
+    plugs:
+      - network
+      - network-bind
+  statsd-exporter:
+    command: bin/statsd_exporter
     daemon: simple
     install-mode: disable
     plugs:
@@ -35,6 +42,11 @@ apps:
     command: bin/karapace_mkpasswd
 
 parts:
+  statsd-exporter:
+    plugin: go
+    source: https://github.com/prometheus/statsd_exporter.git
+    build-snaps:
+        - go
   karapace:
     plugin: python
     source: https://github.com/Aiven-Open/karapace.git  # pip install git+https://github.com/Aiven-Open/karapace@main
