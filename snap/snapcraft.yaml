@@ -51,6 +51,12 @@ parts:
     plugin: python
     source: https://github.com/Aiven-Open/karapace.git  # pip install git+https://github.com/Aiven-Open/karapace@main
     source-tag: ${SNAPCRAFT_PROJECT_VERSION}
+    override-pull: |
+      craftctl default
+      # bump confluent-kafka version
+      sed -i 's/"confluent-kafka == 2\.4\.0",/  "confluent-kafka == 2.11.0",/' pyproject.toml
+    build-snaps:
+        - go
     python-packages:
         - wheel
         - pip
