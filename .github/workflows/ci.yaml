@@ -11,7 +11,7 @@ jobs:
     steps:
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - id: get-version
         name: Retrieve workload version
@@ -25,7 +25,7 @@ jobs:
 
       - id: upload
         name: Upload built snap job artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: charmed-karapace_snap_amd64
           path: charmed-karapace_${{ steps.get-version.outputs.version }}_amd64.snap
@@ -40,7 +40,7 @@ jobs:
       - build
     steps:
       - name: Download snap file
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: charmed-karapace_snap_amd64
           path: .

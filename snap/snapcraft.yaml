@@ -1,6 +1,6 @@
 name: charmed-karapace
-base: core22
-version: '3.12.0'
+base: core24
+version: '5.0.0'
 summary: Karapace on a snap
 description: |
   This is a snap that bundles Karapace in order to be used in Charmed Operators, providing
@@ -13,13 +13,13 @@ confinement: strict
 system-usernames:
   snap_daemon: shared
 
-# COS INTEGRATION
-# slots:
-#   logs:
-#     interface: content
-#     source:
-#       read:
-#         - $SNAP_COMMON/var/log/karapace
+slots:
+  logs:
+    interface: content
+    content: logs
+    source:
+      read:
+        - $SNAP_COMMON/var/log/karapace
 
 apps:
   daemon:
@@ -29,22 +29,39 @@ apps:
     plugs:
       - network
       - network-bind
+  statsd-exporter:
+    command: bin/statsd_exporter
+    daemon: simple
+    install-mode: disable
+    plugs:
+      - network
+      - network-bind
   version:
-    command: bin/karapace --version
+    command: opt/karapace/bin/version.bash
   mkpasswd:
     command: bin/karapace_mkpasswd
 
 parts:
+  statsd-exporter:
+    plugin: go
+    source: https://github.com/prometheus/statsd_exporter.git
+    build-snaps:
+        - go
   karapace:
     plugin: python
     source: https://github.com/Aiven-Open/karapace.git  # pip install git+https://github.com/Aiven-Open/karapace@main
     source-tag: ${SNAPCRAFT_PROJECT_VERSION}
+    override-pull: |
+      craftctl default
+      # bump confluent-kafka version
+      sed -i 's/"confluent-kafka == 2\.4\.0",/  "confluent-kafka == 2.11.0",/' pyproject.toml
+    build-snaps:
+        - go
     python-packages:
         - wheel
         - pip
         - sentry_sdk
-    python-requirements:
-        - ./requirements/requirements.txt
+        - setuptools-golang
     stage-packages:
         - util-linux
   wrapper:
