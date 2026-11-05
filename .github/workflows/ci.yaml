@@ -6,48 +6,33 @@ on:
 
 jobs:
   build:
-    name: Build Snap
-    runs-on: ubuntu-latest
-    steps:
-      - id: checkout
-        name: Checkout repository
-        uses: actions/checkout@v4
-
-      - id: get-version
-        name: Retrieve workload version
-        run: |
-          VERSION=$(yq '(.version|split("-"))[0]' snap/snapcraft.yaml)
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-
-      - id: snapcraft
-        name: Build snap
-        uses: snapcore/action-build@v1
-
-      - id: upload
-        name: Upload built snap job artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: charmed-karapace_snap_amd64
-          path: charmed-karapace_${{ steps.get-version.outputs.version }}_amd64.snap
-    outputs:
-      snap-file: ${{ steps.snapcraft.outputs.snap }}
-      version: ${{ steps.get-version.outputs.version }}
+    name: Build snap
+    uses: canonical/data-platform-workflows/.github/workflows/build_snap.yaml@v54
 
   test:
-    name: Test Snap
-    runs-on: ubuntu-latest
+    name: Test Snap (${{ matrix.system.arch }})
+    runs-on: ${{ matrix.system.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        system:
+          - os: ubuntu-24.04
+            arch: amd64
+          - os: ubuntu-24.04-arm
+            arch: arm64
     needs:
       - build
     steps:
       - name: Download snap file
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
-          name: charmed-karapace_snap_amd64
-          path: .
+          pattern: ${{ needs.build.outputs.artifact-prefix }}-*
+          merge-multiple: true
 
       - name: Install snap file
         run: |
-          sudo snap install charmed-karapace_${{ needs.build.outputs.version }}_amd64.snap --dangerous
+          FILE=$(ls -1 charmed-karapace*${{ matrix.system.arch }}.snap | tail -n1)
+          sudo snap install "$FILE" --dangerous
 
       - name: Check binaries
         run: |

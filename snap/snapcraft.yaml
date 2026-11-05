@@ -12,6 +12,7 @@ confinement: strict
 
 platforms:
   amd64:
+  arm64:
 
 system-usernames:
   snap_daemon: shared
